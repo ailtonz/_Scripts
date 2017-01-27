@@ -1,0 +1,1 @@
+C:\Arquivos de programas\Microsoft Office\Office12\msaccess.exe C:\cliente\NotasFiscais-v1.0.5_ERRO.mdb /repair /compact

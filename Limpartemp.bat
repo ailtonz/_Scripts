@@ -1,0 +1,1 @@
+cd c:\users\%username%\appdata\local rmdir /S/Q Temp
