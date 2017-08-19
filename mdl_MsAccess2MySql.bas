@@ -42,6 +42,27 @@ For Each tdf In db.TableDefs
 Next tdf
 End Sub
 
+Public Function listFields(strTable As String, Optional strSufix As String)
+'' LISTA DE CAMPOS DE TABELAS
+Dim db As Database
+Dim tdf As TableDef
+Dim x As Integer
+Dim tmp As String
+
+Set db = CurrentDb
+
+For Each tdf In db.TableDefs
+   If Left(tdf.Name, 4) <> "MSys" And tdf.Name = strTable Then ' Don't enumerate the system tables
+      For x = 0 To tdf.Fields.Count - 1
+          tmp = tmp & strSufix & tdf.Fields(x).Name & ","
+      Next x
+   End If
+Next tdf
+
+Debug.Print Left(tmp, Len(tmp) - 1) & ""
+
+End Function
+
 
 Private Sub ShowProcedure()
 '' CRIAR MODELO DE PROCEDURES COM SYNTAXE MYSQL
