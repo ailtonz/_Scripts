@@ -24,24 +24,6 @@ CurrentDb.Close
 
 End Sub
 
-
-Private Sub ShowTableFields()
-'' LISTA DE CAMPOS DE TABELAS
-Dim db As Database
-Dim tdf As TableDef
-Dim x As Integer
-
-Set db = CurrentDb
-
-For Each tdf In db.TableDefs
-   If Left(tdf.Name, 4) <> "MSys" Then ' Don't enumerate the system tables
-      For x = 0 To tdf.Fields.Count - 1
-      Debug.Print tdf.Name & "','" & tdf.Fields(x).Name
-      Next x
-   End If
-Next tdf
-End Sub
-
 Public Function listFields(strTable As String, Optional strSufix As String) As String
 '' LISTA DE CAMPOS DE TABELAS
 Dim db As Database
@@ -63,46 +45,65 @@ listFields = Left(tmp, Len(tmp) - 1) & ""
 
 End Function
 
+Private Sub ProcedureDrop()
+'' CRIAR MODELO DE PROCEDURES COM SYNTAXE MYSQL
+Dim db As Database
+Dim tdf As TableDef
+Dim x As Integer
 
-Private Sub ShowProcedure()
+Dim sTmp As String: sTmp = "DROP PROCEDURE IF EXISTS `dpPROCEDURE`;"
+Dim sTmp2 As String
+
+Set db = CurrentDb
+
+For Each tdf In db.TableDefs
+    sTmp2 = ""
+    If Left(tdf.Name, 4) <> "MSys" Then ' Don't enumerate the system tables
+        sTmp2 = sTmp
+        sTmp2 = Replace(sTmp2, "dpPROCEDURE", Replace(Replace(tdf.Name, "tbl", "sp"), "_", ""))
+        GerarSaida sTmp2, "saida.log"
+    End If
+    
+Next tdf
+
+db.Close
+
+End Sub
+
+
+Private Sub ProcedureCreate()
 '' CRIAR MODELO DE PROCEDURES COM SYNTAXE MYSQL
 Dim db As Database
 Dim tdf As TableDef
 Dim x As Integer
 Dim sSQL As String
+Dim sInsert As String
+Dim sUpdate As String
 
 Dim sTmp As String
 Dim sTmp2 As String
 
-sTmp = "DROP PROCEDURE dpPROCEDURE" & vbNewLine
-sTmp = sTmp & "CREATE PROCEDURE spPROCEDURE " & vbNewLine
-sTmp = sTmp & "LANGUAGE sql" & vbNewLine
-sTmp = sTmp & "NOT DETERMINISTIC" & vbNewLine
-sTmp = sTmp & "CONTAINS sql" & vbNewLine
-sTmp = sTmp & "SQL SECURITY DEFINER" & vbNewLine
-sTmp = sTmp & "COMMENT ''" & vbNewLine
-
+sTmp = "DELIMITER ;;" & vbNewLine
+sTmp = sTmp & "DROP PROCEDURE IF EXISTS `dpPROCEDURE`;" & vbNewLine
+sTmp = sTmp & "CREATE PROCEDURE `spPROCEDURE` p_PARAMETER" & vbNewLine
 sTmp = sTmp & "BEGIN" & vbNewLine
-sTmp = sTmp & "IF p_ID = 0 THEN " & vbNewLine
+sTmp = sTmp & "IF p_ID = ""0"" THEN " & vbNewLine
 sTmp = sTmp & " INSERT INTO tbl_Tabela " & vbNewLine
-sTmp = sTmp & "         ( " & vbNewLine
-sTmp = sTmp & "         fldCAMPOS_TABELA " & vbNewLine
-sTmp = sTmp & "         ) " & vbNewLine
+sTmp = sTmp & "         ( fldCAMPOS_TABELA ) " & vbNewLine
 sTmp = sTmp & "    VALUES  " & vbNewLine
-sTmp = sTmp & "         ( " & vbNewLine
-sTmp = sTmp & "         fldCAMPOS_PARAMETROS " & vbNewLine
-sTmp = sTmp & "         ); " & vbNewLine
-sTmp = sTmp & "ELSEIF p_ID <> 0 THEN " & vbNewLine
-sTmp = sTmp & " IF p_NOME IS NOT NULL THEN " & vbNewLine
+sTmp = sTmp & "         ( fldCAMPOS_PARAMETROS ); " & vbNewLine
+sTmp = sTmp & "ELSEIF p_ID <> ""0"" THEN " & vbNewLine
+sTmp = sTmp & " IF p_NOME <> """" THEN " & vbNewLine
 sTmp = sTmp & "     UPDATE tbl_Tabela " & vbNewLine
 sTmp = sTmp & "         SET  " & vbNewLine
-sTmp = sTmp & "             CNPJ_CPF    =   trim(ucase(p_CNPJ_CPF)) ,  " & vbNewLine
-sTmp = sTmp & "             NOME        =   trim(ucase(p_NOME))      " & vbNewLine
+sTmp = sTmp & "             fldCAMPOS_ATUALIZACAO " & vbNewLine
 sTmp = sTmp & "         WHERE ID = p_ID; " & vbNewLine
 sTmp = sTmp & " ELSE " & vbNewLine
 sTmp = sTmp & "     DELETE FROM tbl_Tabela WHERE ID = p_ID; " & vbNewLine
 sTmp = sTmp & " END IF; " & vbNewLine
 sTmp = sTmp & "END IF;  " & vbNewLine
+sTmp = sTmp & "END ;;" & vbNewLine
+sTmp = sTmp & "DELIMITER ;" & vbNewLine
 
 Set db = CurrentDb
 
@@ -111,27 +112,44 @@ For Each tdf In db.TableDefs
         
         '' PARAMETROS
         sSQL = ""
-        sSQL = sSQL & Replace(Replace(tdf.Name, "tbl", "sp"), "_", "") & "("
+        sSQL = sSQL & "("
+        
         For x = 0 To tdf.Fields.Count - 1
-           sSQL = sSQL & "IN `" & tdf.Fields(x).Name & IIf(Left(tdf.Fields(x).Name, 2) = "ID", "` INT,", "` VARCHAR(50),")
+           sSQL = sSQL & "IN " & "p_" & tdf.Fields(x).Name & IIf(Left(tdf.Fields(x).Name, 2) = "ID", " INT,", " VARCHAR(50),")
         Next x
         sSQL = Left(sSQL, Len(sSQL) - 1) & ")"
-'        sSQL = sSQL & vbNewLine
-        
+
         '' CARREGAR LAYOUT
         sTmp2 = sTmp
         
         '' DROP PROCEDURE
         sTmp2 = Replace(sTmp2, "dpPROCEDURE", Replace(Replace(tdf.Name, "tbl", "sp"), "_", ""))
         
-        '' CREATE PROCEDURE
-        sTmp2 = Replace(sTmp2, "spPROCEDURE", sSQL)
-
-		'' CAMPOS DA TABELA
-        sTmp2 = Replace(sTmp2, "fldCAMPOS_TABELA", listFields(tdf.Name))
+        '' CREATE PARAMETERS
+        sTmp2 = Replace(sTmp2, "p_PARAMETER", sSQL)
         
+        '' CREATE PROCEDURE
+        sTmp2 = Replace(sTmp2, "spPROCEDURE", Replace(Replace(tdf.Name, "tbl", "sp"), "_", ""))
+                
+        '' CAMPOS DA TABELA
+        sTmp2 = Replace(sTmp2, "fldCAMPOS_TABELA", listFields(tdf.Name))
+
         '' PARAMETROS DA PROCEDURE
         sTmp2 = Replace(sTmp2, "fldCAMPOS_PARAMETROS", listFields(tdf.Name, "p_"))
+                
+        '' PARAMETROS - UPDATE
+        sUpdate = ""
+        For x = 0 To tdf.Fields.Count - 1
+            If Left(tdf.Fields(x).Name, 2) = "ID" Then
+                sUpdate = sUpdate & tdf.Fields(x).Name & " = p_" & tdf.Fields(x).Name & ","
+            Else
+                sUpdate = sUpdate & tdf.Fields(x).Name & " = " & "trim(ucase(p_" & tdf.Fields(x).Name & ")),"
+            End If
+        Next x
+        sUpdate = Left(sUpdate, Len(sUpdate) - 1) & ""
+        
+        sTmp2 = Replace(sTmp2, "fldCAMPOS_ATUALIZACAO", sUpdate)
+        
         
         '' TABLE
         sTmp2 = Replace(sTmp2, "tbl_Tabela", tdf.Name)
