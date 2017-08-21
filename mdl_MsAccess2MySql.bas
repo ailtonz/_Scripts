@@ -42,7 +42,7 @@ For Each tdf In db.TableDefs
 Next tdf
 End Sub
 
-Public Function listFields(strTable As String, Optional strSufix As String)
+Public Function listFields(strTable As String, Optional strSufix As String) As String
 '' LISTA DE CAMPOS DE TABELAS
 Dim db As Database
 Dim tdf As TableDef
@@ -59,7 +59,7 @@ For Each tdf In db.TableDefs
    End If
 Next tdf
 
-Debug.Print Left(tmp, Len(tmp) - 1) & ""
+listFields = Left(tmp, Len(tmp) - 1) & ""
 
 End Function
 
@@ -86,14 +86,11 @@ sTmp = sTmp & "BEGIN" & vbNewLine
 sTmp = sTmp & "IF p_ID = 0 THEN " & vbNewLine
 sTmp = sTmp & " INSERT INTO tbl_Tabela " & vbNewLine
 sTmp = sTmp & "         ( " & vbNewLine
-sTmp = sTmp & "         ID_EMPRESA  , " & vbNewLine
-sTmp = sTmp & "         CNPJ_CPF " & vbNewLine
+sTmp = sTmp & "         fldCAMPOS_TABELA " & vbNewLine
 sTmp = sTmp & "         ) " & vbNewLine
 sTmp = sTmp & "    VALUES  " & vbNewLine
 sTmp = sTmp & "         ( " & vbNewLine
-sTmp = sTmp & "         p_ID_EMPRESA, " & vbNewLine
-sTmp = sTmp & "         trim(ucase(p_CNPJ_CPF)) ,  " & vbNewLine
-sTmp = sTmp & "          " & vbNewLine
+sTmp = sTmp & "         fldCAMPOS_PARAMETROS " & vbNewLine
 sTmp = sTmp & "         ); " & vbNewLine
 sTmp = sTmp & "ELSEIF p_ID <> 0 THEN " & vbNewLine
 sTmp = sTmp & " IF p_NOME IS NOT NULL THEN " & vbNewLine
@@ -106,8 +103,6 @@ sTmp = sTmp & " ELSE " & vbNewLine
 sTmp = sTmp & "     DELETE FROM tbl_Tabela WHERE ID = p_ID; " & vbNewLine
 sTmp = sTmp & " END IF; " & vbNewLine
 sTmp = sTmp & "END IF;  " & vbNewLine
-
-sTmp = sTmp & "END" & vbNewLine
 
 Set db = CurrentDb
 
@@ -131,6 +126,12 @@ For Each tdf In db.TableDefs
         
         '' CREATE PROCEDURE
         sTmp2 = Replace(sTmp2, "spPROCEDURE", sSQL)
+
+		'' CAMPOS DA TABELA
+        sTmp2 = Replace(sTmp2, "fldCAMPOS_TABELA", listFields(tdf.Name))
+        
+        '' PARAMETROS DA PROCEDURE
+        sTmp2 = Replace(sTmp2, "fldCAMPOS_PARAMETROS", listFields(tdf.Name, "p_"))
         
         '' TABLE
         sTmp2 = Replace(sTmp2, "tbl_Tabela", tdf.Name)
