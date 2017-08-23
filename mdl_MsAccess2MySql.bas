@@ -1,76 +1,6 @@
 Attribute VB_Name = "mdl_MsAccess2MySql"
 Option Compare Database
 
-Sub Obj()
-'' CONSULTA PARA LISTAR TABELAS DO ACCESS
-''SELECT MSysObjects.name FROM MSysObjects WHERE (((MSysObjects.name)<>"tmpObj") AND ((MSysObjects.Type)=1) AND ((MSysObjects.Flags)=0));
-
-'' RELA플O DE TABELAS PARA ALTERA합ES
-Dim rst As DAO.Recordset: Set rst = CurrentDb.OpenRecordset("Select nome from tmpObj")
-Dim sql As String
-
-    While Not rst.EOF
-    
-    sql = "ALTER TABLE " & rst.Fields("nome").Value & " add ID_EMPRESA long"
-    Debug.Print sql
-    
-    DoCmd.RunSQL sql, 0
-    
-    rst.MoveNext
-    
-    Wend
-
-CurrentDb.Close
-
-End Sub
-
-Public Function listFields(strTable As String, Optional strSufix As String) As String
-'' LISTA DE CAMPOS DE TABELAS
-Dim db As Database
-Dim tdf As TableDef
-Dim x As Integer
-Dim tmp As String
-
-Set db = CurrentDb
-
-For Each tdf In db.TableDefs
-   If Left(tdf.Name, 4) <> "MSys" And tdf.Name = strTable Then ' Don't enumerate the system tables
-      For x = 0 To tdf.Fields.Count - 1
-          tmp = tmp & strSufix & tdf.Fields(x).Name & ","
-      Next x
-   End If
-Next tdf
-
-listFields = Left(tmp, Len(tmp) - 1) & ""
-
-End Function
-
-Private Sub ProcedureDrop()
-'' CRIAR MODELO DE PROCEDURES COM SYNTAXE MYSQL
-Dim db As Database
-Dim tdf As TableDef
-Dim x As Integer
-
-Dim sTmp As String: sTmp = "DROP PROCEDURE IF EXISTS `dpPROCEDURE`;"
-Dim sTmp2 As String
-
-Set db = CurrentDb
-
-For Each tdf In db.TableDefs
-    sTmp2 = ""
-    If Left(tdf.Name, 4) <> "MSys" Then ' Don't enumerate the system tables
-        sTmp2 = sTmp
-        sTmp2 = Replace(sTmp2, "dpPROCEDURE", Replace(Replace(tdf.Name, "tbl", "sp"), "_", ""))
-        GerarSaida sTmp2, "saida.log"
-    End If
-    
-Next tdf
-
-db.Close
-
-End Sub
-
-
 Private Sub ProcedureCreate()
 '' CRIAR MODELO DE PROCEDURES COM SYNTAXE MYSQL
 Dim db As Database
@@ -150,7 +80,6 @@ For Each tdf In db.TableDefs
         
         sTmp2 = Replace(sTmp2, "fldCAMPOS_ATUALIZACAO", sUpdate)
         
-        
         '' TABLE
         sTmp2 = Replace(sTmp2, "tbl_Tabela", tdf.Name)
                 
@@ -173,3 +102,90 @@ Public Function GerarSaida(strConteudo As String, strArquivo As String)
 
 End Function
 
+Sub Obj()
+'' CONSULTA PARA LISTAR TABELAS DO ACCESS
+''SELECT MSysObjects.name FROM MSysObjects WHERE (((MSysObjects.name)<>"tmpObj") AND ((MSysObjects.Type)=1) AND ((MSysObjects.Flags)=0));
+
+'' RELA플O DE TABELAS PARA ALTERA합ES
+Dim rst As DAO.Recordset: Set rst = CurrentDb.OpenRecordset("Select * from tmpObj where OK =0")
+Dim sql As String
+
+    While Not rst.EOF
+    
+    'sql = "ALTER TABLE " & rst.Fields("nome").Value & " add ID_EMPRESA long"
+    If rst.Fields("CampoChave").Value <> "" Then
+    
+'        '' RENAME COLUMN
+'        'sql = "ALTER TABLE " & rst.Fields("nome").Value & " RENAME " & Replace(rst.Fields("CampoChave").Value, "PK_", "") & " TO " & rst.Fields("CampoChave").Value
+'
+'        '' ADD COLUMN
+'        sql = "ALTER TABLE " & rst.Fields("nome").Value & " ADD " & rst.Fields("CampoChave").Value & " char(255)"
+'            Debug.Print sql
+'            DoCmd.RunSQL sql, 0
+'
+'        '' UPDATE ENTRE CAMPOS
+'        sql = "UPDATE " & rst.Fields("nome").Value & " SET " & rst.Fields("CampoChave").Value & " = " & Replace(rst.Fields("CampoChave").Value, "PK_", "")
+'            Debug.Print sql
+'            DoCmd.RunSQL sql, 0
+'
+'        '' DROP COLUMN
+'        sql = "ALTER TABLE " & rst.Fields("nome").Value & " DROP COLUMN " & Replace(rst.Fields("CampoChave").Value, "PK_", "")
+'            Debug.Print sql
+'            DoCmd.RunSQL sql, 0
+    
+    
+    End If
+    
+    rst.MoveNext
+    
+    Wend
+
+CurrentDb.Close
+
+End Sub
+
+Public Function listFields(strTable As String, Optional strSufix As String) As String
+'' LISTA DE CAMPOS DE TABELAS
+Dim db As Database
+Dim tdf As TableDef
+Dim x As Integer
+Dim tmp As String
+
+Set db = CurrentDb
+
+For Each tdf In db.TableDefs
+   If Left(tdf.Name, 4) <> "MSys" And tdf.Name = strTable Then ' Don't enumerate the system tables
+      For x = 0 To tdf.Fields.Count - 1
+          tmp = tmp & strSufix & tdf.Fields(x).Name & ","
+      Next x
+   End If
+Next tdf
+
+listFields = Left(tmp, Len(tmp) - 1) & ""
+
+End Function
+
+Private Sub ProcedureDrop()
+'' CRIAR MODELO DE PROCEDURES COM SYNTAXE MYSQL
+Dim db As Database
+Dim tdf As TableDef
+Dim x As Integer
+
+Dim sTmp As String: sTmp = "DROP PROCEDURE IF EXISTS `dpPROCEDURE`;"
+Dim sTmp2 As String
+
+Set db = CurrentDb
+
+For Each tdf In db.TableDefs
+    sTmp2 = ""
+    If Left(tdf.Name, 4) <> "MSys" Then ' Don't enumerate the system tables
+        sTmp2 = sTmp
+        sTmp2 = Replace(sTmp2, "dpPROCEDURE", Replace(Replace(tdf.Name, "tbl", "sp"), "_", ""))
+        GerarSaida sTmp2, "saida2.log"
+    End If
+    
+Next tdf
+
+db.Close
+
+End Sub
