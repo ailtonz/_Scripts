@@ -1,0 +1,101 @@
+--
+-- NOTA:
+-- Exemplo de scripts para uso do winscp via command ou procedure SQL 
+-- 
+
+WinSCP.bat
+--########################
+
+winscp.com /script=WinSCP.cfg
+pause
+
+WinSCP.cfg
+--########################
+
+
+#mover  - mv *.txt /bkp/ 
+#subir  - put *.txt
+#baixar - get *.7z
+
+option batch abort
+option confirm off
+open ftps://usuario_ftp:usuario_ftp_senha@ftp.dominio.com:990/ -passive=on
+
+#diretorio
+cd /bkp
+
+option transfer binary
+
+#baixar
+get *.7z
+
+#mover
+mv *.7z /bkp/
+
+close
+exit
+
+--########################
+--########################
+--########################
+
+CREATE PROCEDURE [auxiliar].[filesDownloads]
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+-- ######################
+-- CONFIGURAÇÕES
+-- ######################
+
+	declare @return_value	INT
+	,@AppName				VARCHAR(255)='winscp.com'
+	,@Filename				VARCHAR(255)='WinSCP.cfg'
+	,@Path					VARCHAR(255)='C:\app\WinSCP\'
+	,@PathWorking			VARCHAR(255)='\\000.000.00.00\e\'
+	,@Cmd					VARCHAR(500)=''
+	,@sUserName				VARCHAR(255)='usuario_ftp'
+	,@sUserPassword			VARCHAR(255)='usuario_ftp_senha'
+	,@sServerIP				VARCHAR(255)='ftp.dominio.com:990'
+	,@sServerPath			VARCHAR(255)='/bkp'
+	,@sFile					VARCHAR(255)='*.*'
+
+-- ######################
+-- ARQUIVOS DE SAIDA
+-- ######################
+
+	declare @cfg		VARCHAR(2000)='
+	option batch abort
+	option confirm off
+	option transfer binary
+	open ftps://sUserName:sUserPassword@sServerIP/ -passive=on
+
+	cd sServerPath
+
+	lcd sPath\
+
+	get sFile
+	
+	mv sFile /bkp/
+
+	close
+	exit'
+
+	set @cfg=replace(@cfg,'sUserName',@sUserName)
+	set @cfg=replace(@cfg,'sUserPassword',@sUserPassword)
+	set @cfg=replace(@cfg,'sServerIP',@sServerIP)
+	set @cfg=replace(@cfg,'sServerPath',@sServerPath)
+	set @cfg=replace(@cfg,'sFile',@sFile)
+	set @cfg=replace(@cfg,'sPath',@PathWorking)
+
+
+	EXEC	@return_value = [adm].[spWriteStringToFile]
+			@String = @cfg,
+			@Path = @Path,
+			@Filename = @Filename
+
+	SET @Cmd = @Path +'\'+ @AppName + ' /script='+@Path +'\'+@Filename
+
+	EXEC xp_cmdshell @Cmd
+
+END
