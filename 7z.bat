@@ -1,1 +1,0 @@
-perl 7z.pl C:\Users\%username%\Desktop\prj_cliente
