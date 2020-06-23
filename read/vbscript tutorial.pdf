@@ -1,0 +1,27 @@
+Call Welcome()
+
+sub Welcome()
+
+x = 0
+xx = "247974"
+zz = "AZ"
+
+yy = InputBox("Informe o código", "Gerar de liberação")
+
+For n = 6 To 5 Step -1
+    zz = zz & Mid(xx, n, 1) & Mid(yy, n, 1)
+Next 
+
+zz = zz & "-"
+For n = 4 To 3 Step -1
+    zz = zz & Mid(xx, n, 1) & Mid(yy, n, 1)
+Next 
+
+zz = zz & "-"
+For n = 2 To 1 Step -1
+    zz = zz & Mid(xx, n, 1) & Mid(yy, n, 1)
+Next 
+
+   msgbox zz,"Código de liberação"
+
+end sub

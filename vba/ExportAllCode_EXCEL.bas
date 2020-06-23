@@ -1,6 +1,6 @@
 Attribute VB_Name = "ExportAllCode_EXCEL"
 
-Private Sub AddRefGuid()
+private Sub AddRefGuid()
 On Error Resume Next
 
     'Add VBIDE (Microsoft Visual Basic for Applications Extensibility 5.3
@@ -37,11 +37,11 @@ Public Sub ExportAllCode_EXCEL() '' Extracao de codigos do projeto
                         
         End If
     Next c
-        MsgBox "Created source files in " & Application.ActiveWorkbook.Path & sFileName
+	MsgBox "Created source files in " & Application.ActiveWorkbook.Path & sFileName
 End Sub
 
 
-Private Function CreateDir(strPath As String) '' Criar estrutura de diretorios
+private Function CreateDir(strPath As String) '' Criar estrutura de diretorios
     Dim elm As Variant
     Dim strCheckPath As String
 
