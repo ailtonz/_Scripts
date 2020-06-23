@@ -3,10 +3,10 @@
 use warnings;
 
 my $Cliente = 'CLIENTE';
-my $smtp	= 'smtp.cliente.com.br';
-my $to		= 'nome@cliente.com.br';
-my $senha	= '_SENHA_';
-my $cc		= 'teste02@gmail.com,teste02@yahoo.com.br';
+my $smtp	= 'smtp.f4consult.com.br';
+my $to		= 'ailton@f4consult.com.br';
+my $senha	= '41L70N$$';
+my $cc		= 'ailtonzsilva@gmail.com,ailtonzsilva@yahoo.com.br,ailton@f4consult.com.br';
 
 $Cliente = $Cliente.'_'.DataHora();
 my $Lista = 'Arquivos.txt';

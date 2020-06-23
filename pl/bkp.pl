@@ -1,22 +1,55 @@
-#!c:/Perl/bin/perl.exe -w
+#!c:/Perl/perl.exe -w
 
-#
-# exemplo bkp.bat
-# perl bkp.pl C:\temp\projeto
-#
-
-use warnings;
 use strict;
+use warnings;
 
-exit unless @ARGV;
+my $Lista = 'Arquivos.txt';
+my $Caminho = 'BKP';
+my $Pacote = DataHora().".zip";
 
-my $path = "C:\\Program Files\\7-Zip\\7z.exe"; # modify this accordingly
-my $infile = (split /\./,$ARGV[0])[0];
+BKP($Lista,$Caminho);
 
-system("\"$path\" a $infile".'_'.DataHora()." @ARGV");
+sub BKP{
+# ARQV, DESTINO
+	use File::Copy;
+	open(my $file, q{<}, $_[0]);
+	foreach my $arquivo ( <$file> ) {
+	   #Remove o último caractere apenas se for igual a $/ "Separador de regsitro" 
+	   chomp($arquivo);
+	   # Verifica se o arquivo existe
+	   if (-e $arquivo){
+		   CompactarArquivos($Lista,$Pacote);
+		   move($Pacote,$Caminho."/".$Pacote);
+	   }
+	}
+	}
+	
+sub CompactarArquivos{
+# ARQVS, NomeDoPacote
+	# Create a Zip file
+	use Getopt::Std;
+	use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
+	my $zip = Archive::Zip->new();
 
-sub DataHora{
+	open(my $file, q{<}, $_[0]) or die "Can't open file $!\n";
+	foreach my $arquivo ( <$file> ) {
+	   #Remove o último caractere apenas se for igual a $/ "Separador de regsitro" 
+	   chomp($arquivo);
+	   # Verifica se o arquivo existe  
+	   if (-e $arquivo){
+	      # Add a file from disk
+	      my $file_member = $zip->addFile($arquivo);
+	   }
+	}
+
+	# Save the Zip file
+	unless ( $zip->writeToFileNamed($_[1]) == AZ_OK ) {
+	   die 'write error';
+	}
+	
+	}	
 # Criar layout de data
+sub DataHora{
 	my($dd,$mm,$yy,$day,$hh,$nn) = (localtime)[3,4,5,6,2,1];
 	my $today =  join '', map sprintf("%02d", $_),($yy%100,$mm+1,$dd,);
 	my $hr = join '', map sprintf("%02d", $_),($hh,$nn);

@@ -108,3 +108,4 @@
 
 [Recursividade](https://www.embarcados.com.br/recursividade/)
 
+[Como automatizar o Excel a partir de um VBScript do lado do cliente](https://docs.microsoft.com/pt-br/previous-versions/office/troubleshoot/office-developer/automate-excel-from-client-side-vbscript)
